@@ -1,0 +1,65 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+} */
+
+.drop-down-container {
+    display: inline-flex;
+    flex-direction: column; /* Align label and dropdown vertically */
+    gap: .3rem;
+    margin-bottom: 1rem; /* Add space between multiple sections */
+  }
+
+#sectionDropdown {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s;
+}
+
+#sectionDropdown:focus {
+    border-color: #007bff;
+    outline: none;
+}
+.shape-container {
+    border: 2px solid #007bff; /* Border color */
+    padding: 1rem; /* Space inside the border */
+    margin-bottom: 1rem; /* Add space between the shape container and other elements */
+    width: 50%; /* Make sure it fills the available width */
+  }
+
+  #svgContainer {
+    width: 100%;  /* Makes the container fill its parent container */
+    height: 600px; /* Adjust the height as needed */
+    border: 1px solid #ccc; /* Optional: For visualization */
+    padding: 20px;
+  }
+  
+  /* #svgContainer svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  } */
+
+  #canvasContainer {
+    width: 100%;        /* Makes the container full width */
+    height: auto;      /* Set the height of the container */
+    border: 1px solid #ccc; /* Optional, just to visualize the boundary */
+    padding: 100px;
+  }
+  
