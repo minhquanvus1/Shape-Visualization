@@ -40,7 +40,7 @@
     border: 2px solid #007bff; /* Border color */
     padding: 1rem; /* Space inside the border */
     margin-bottom: 1rem; /* Add space between the shape container and other elements */
-    width: 50%; /* Make sure it fills the available width */
+    width: 80%; /* Make sure it fills the available width */
   }
 
   #svgContainer {
@@ -50,16 +50,21 @@
     padding: 20px;
   }
   
-  /* #svgContainer svg {
+  #svgContainer svg {
     width: 100%;
     height: 100%;
     display: block;
-  } */
+  }
 
   #canvasContainer {
     width: 100%;        /* Makes the container full width */
     height: auto;      /* Set the height of the container */
     border: 1px solid #ccc; /* Optional, just to visualize the boundary */
-    padding: 100px;
+    /* padding: 100px; */
+  }
+
+  #canvasContainer canvas {
+    width: 100% !important;
+    height: auto;
   }
   

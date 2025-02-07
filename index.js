@@ -8188,58 +8188,58 @@ document.addEventListener("DOMContentLoaded", () => {
   controls.screenSpacePanning = false;
   controls.maxPolarAngle = Math.PI / 2;
 
-  function draw3DShape() {
-    // Clear previous objects
-    while (scene.children.length > 0) {
-      scene.remove(scene.children[0]);
-    }
+  //   function draw3DShape() {
+  //     // Clear previous objects
+  //     while (scene.children.length > 0) {
+  //       scene.remove(scene.children[0]);
+  //     }
 
-    // Add light and grid helper again
-    scene.add(light);
-    scene.add(gridHelper);
+  //     // Add light and grid helper again
+  //     scene.add(light);
+  //     scene.add(gridHelper);
 
-    const pointsArray = [];
-    const colorsArray = [];
+  //     const pointsArray = [];
+  //     const colorsArray = [];
 
-    verticesData.polygonsBySection.forEach((section) => {
-      section.polygons.forEach((polygon) => {
-        const sectionColor = new THREE.Color(`#${polygon.color}`); // Convert hex to THREE.Color
-        polygon.points3D.forEach((point) => {
-          const vertex = new THREE.Vector3(...point.vertex);
-          pointsArray.push(vertex.x, vertex.y, vertex.z);
+  //     verticesData.polygonsBySection.forEach((section) => {
+  //       section.polygons.forEach((polygon) => {
+  //         const sectionColor = new THREE.Color(`#${polygon.color}`); // Convert hex to THREE.Color
+  //         polygon.points3D.forEach((point) => {
+  //           const vertex = new THREE.Vector3(...point.vertex);
+  //           pointsArray.push(vertex.x, vertex.y, vertex.z);
 
-          // Assign color for each point
-          colorsArray.push(sectionColor.r, sectionColor.g, sectionColor.b);
-        });
-      });
-    });
+  //           // Assign color for each point
+  //           colorsArray.push(sectionColor.r, sectionColor.g, sectionColor.b);
+  //         });
+  //       });
+  //     });
 
-    if (pointsArray.length > 0) {
-      // Create geometry from collected points
-      const geometry = new THREE.BufferGeometry();
-      geometry.setAttribute(
-        "position",
-        new THREE.BufferAttribute(new Float32Array(pointsArray), 3)
-      );
-      geometry.setAttribute(
-        "color",
-        new THREE.BufferAttribute(new Float32Array(colorsArray), 3)
-      );
+  //     if (pointsArray.length > 0) {
+  //       // Create geometry from collected points
+  //       const geometry = new THREE.BufferGeometry();
+  //       geometry.setAttribute(
+  //         "position",
+  //         new THREE.BufferAttribute(new Float32Array(pointsArray), 3)
+  //       );
+  //       geometry.setAttribute(
+  //         "color",
+  //         new THREE.BufferAttribute(new Float32Array(colorsArray), 3)
+  //       );
 
-      // Create a material with vertex colors
-      const material = new THREE.PointsMaterial({
-        vertexColors: true, // Enable per-vertex coloring
-        size: 5, // Adjust point size
-      });
+  //       // Create a material with vertex colors
+  //       const material = new THREE.PointsMaterial({
+  //         vertexColors: true, // Enable per-vertex coloring
+  //         size: 5, // Adjust point size
+  //       });
 
-      // Create and add point cloud
-      const pointsMesh = new THREE.Points(geometry, material);
-      scene.add(pointsMesh);
-    }
+  //       // Create and add point cloud
+  //       const pointsMesh = new THREE.Points(geometry, material);
+  //       scene.add(pointsMesh);
+  //     }
 
-    camera.position.set(0, 50, 100);
-    camera.lookAt(0, 0, 0);
-  }
+  //     camera.position.set(0, 50, 100);
+  //     camera.lookAt(0, 0, 0);
+  //   }
 
   //   function draw3DShape() {
   //     // Clear previous objects
@@ -8334,6 +8334,294 @@ document.addEventListener("DOMContentLoaded", () => {
   //       ? section.polygons.flatMap((polygon) => polygon.points2D)
   //       : [];
   //   }
+  function draw3DShape() {
+    // Clear previous objects
+    while (scene.children.length > 0) {
+      scene.remove(scene.children[0]);
+    }
+
+    // Add light and grid helper again
+    scene.add(light);
+    scene.add(gridHelper);
+
+    const verticesArray = [];
+    const facesArray = [];
+    const colorsArray = [];
+    let vertexIndex = 0;
+    const scale = 0.1;
+
+    verticesData.polygonsBySection.forEach((section) => {
+      section.polygons.forEach((polygon) => {
+        const sectionColor = new THREE.Color(`#${polygon.color}`); // Convert hex to THREE.Color
+        const faceVertexIndices = [];
+
+        polygon.points3D.forEach((point) => {
+          const vertex = new THREE.Vector3(...point.vertex).multiplyScalar(
+            scale
+          );
+          verticesArray.push(vertex.x, vertex.y, vertex.z);
+
+          // Assign color for each point
+          colorsArray.push(sectionColor.r, sectionColor.g, sectionColor.b);
+
+          faceVertexIndices.push(vertexIndex++);
+        });
+
+        // Create faces for the polygon
+        for (let i = 2; i < faceVertexIndices.length; i++) {
+          facesArray.push(
+            faceVertexIndices[0],
+            faceVertexIndices[i - 1],
+            faceVertexIndices[i]
+          );
+        }
+      });
+    });
+
+    if (verticesArray.length > 0) {
+      // Create geometry from collected vertices and faces
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute(
+        "position",
+        new THREE.BufferAttribute(new Float32Array(verticesArray), 3)
+      );
+      geometry.setAttribute(
+        "color",
+        new THREE.BufferAttribute(new Float32Array(colorsArray), 3)
+      );
+      geometry.setIndex(facesArray);
+
+      // Create a material with vertex colors
+      const material = new THREE.MeshBasicMaterial({
+        vertexColors: true, // Enable per-vertex coloring
+        side: THREE.DoubleSide, // Render both sides of the faces
+      });
+
+      // Create and add mesh
+      const mesh = new THREE.Mesh(geometry, material);
+      console.log("Mesh created:", mesh);
+      mesh.scale.set(0.1, 0.1, 0.1);
+      console.log("Mesh scale set to 0.5");
+      scene.add(mesh);
+    }
+
+    camera.position.set(0, 50, 100);
+    camera.lookAt(0, 0, 0);
+  }
+  // draw 3d shape with custom img for vertices
+  //   function draw3DShape() {
+  //     // Clear previous objects
+  //     while (scene.children.length > 0) {
+  //       scene.remove(scene.children[0]);
+  //     }
+
+  //     // Add light and grid helper again
+  //     scene.add(light);
+  //     scene.add(gridHelper);
+
+  //     const verticesArray = [];
+  //     const facesArray = [];
+  //     const colorsArray = [];
+  //     const pointsArray = [];
+  //     const pointColorsArray = [];
+  //     let vertexIndex = 0;
+  //     const scale = 0.1; // Adjust this value to make the mesh smaller
+
+  //     verticesData.polygonsBySection.forEach((section) => {
+  //       section.polygons.forEach((polygon) => {
+  //         const sectionColor = new THREE.Color(`#${polygon.color}`); // Convert hex to THREE.Color
+  //         const faceVertexIndices = [];
+
+  //         polygon.points3D.forEach((point) => {
+  //           // Scale the vertex coordinates
+  //           const vertex = new THREE.Vector3(...point.vertex).multiplyScalar(
+  //             scale
+  //           );
+  //           verticesArray.push(vertex.x, vertex.y, vertex.z);
+
+  //           // Assign color for each point
+  //           colorsArray.push(sectionColor.r, sectionColor.g, sectionColor.b);
+
+  //           faceVertexIndices.push(vertexIndex++);
+
+  //           // Add points for the point cloud
+  //           pointsArray.push(vertex.x, vertex.y, vertex.z);
+  //           pointColorsArray.push(sectionColor.r, sectionColor.g, sectionColor.b);
+  //         });
+
+  //         // Create faces for the polygon
+  //         for (let i = 2; i < faceVertexIndices.length; i++) {
+  //           facesArray.push(
+  //             faceVertexIndices[0],
+  //             faceVertexIndices[i - 1],
+  //             faceVertexIndices[i]
+  //           );
+  //         }
+  //       });
+  //     });
+
+  //     if (verticesArray.length > 0) {
+  //       // Create geometry from collected vertices and faces
+  //       const geometry = new THREE.BufferGeometry();
+  //       geometry.setAttribute(
+  //         "position",
+  //         new THREE.BufferAttribute(new Float32Array(verticesArray), 3)
+  //       );
+  //       geometry.setAttribute(
+  //         "color",
+  //         new THREE.BufferAttribute(new Float32Array(colorsArray), 3)
+  //       );
+  //       geometry.setIndex(facesArray);
+
+  //       // Create a material with vertex colors
+  //       const material = new THREE.MeshBasicMaterial({
+  //         vertexColors: true, // Enable per-vertex coloring
+  //         side: THREE.DoubleSide, // Render both sides of the faces
+  //       });
+
+  //       // Create and add mesh
+  //       const mesh = new THREE.Mesh(geometry, material);
+  //       mesh.scale.set(0.1, 0.1, 0.1);
+  //       scene.add(mesh);
+  //     }
+
+  //     if (pointsArray.length > 0) {
+  //       // Create geometry from collected points
+  //       const pointsGeometry = new THREE.BufferGeometry();
+  //       pointsGeometry.setAttribute(
+  //         "position",
+  //         new THREE.BufferAttribute(new Float32Array(pointsArray), 3)
+  //       );
+  //       pointsGeometry.setAttribute(
+  //         "color",
+  //         new THREE.BufferAttribute(new Float32Array(pointColorsArray), 3)
+  //       );
+
+  //       // Create a material with vertex colors
+  //       const pointsMaterial = new THREE.PointsMaterial({
+  //         vertexColors: true, // Enable per-vertex coloring
+  //         size: 10, // Adjust point size
+  //       });
+
+  //       // Create and add point cloud
+  //       const pointsMesh = new THREE.Points(pointsGeometry, pointsMaterial);
+  //       scene.add(pointsMesh);
+  //     }
+
+  //     camera.position.set(0, 50, 100);
+  //     camera.lookAt(0, 0, 0);
+  //   }
+  //   function draw3DShape() {
+  //     // Clear previous objects
+  //     while (scene.children.length > 0) {
+  //       scene.remove(scene.children[0]);
+  //     }
+
+  //     // Add light and grid helper again
+  //     scene.add(light);
+  //     scene.add(gridHelper);
+
+  //     const verticesArray = [];
+  //     const facesArray = [];
+  //     const colorsArray = [];
+  //     const pointsArray = [];
+  //     const pointColorsArray = [];
+  //     let vertexIndex = 0;
+  //     const scale = 0.1; // Adjust this value to make the mesh smaller
+
+  //     verticesData.polygonsBySection.forEach((section) => {
+  //       section.polygons.forEach((polygon) => {
+  //         const sectionColor = new THREE.Color(`#${polygon.color}`); // Convert hex to THREE.Color
+  //         const faceVertexIndices = [];
+
+  //         polygon.points3D.forEach((point) => {
+  //           // Scale the vertex coordinates
+  //           const vertex = new THREE.Vector3(...point.vertex).multiplyScalar(
+  //             scale
+  //           );
+  //           verticesArray.push(vertex.x, vertex.y, vertex.z);
+
+  //           // Assign color for each point
+  //           colorsArray.push(sectionColor.r, sectionColor.g, sectionColor.b);
+
+  //           faceVertexIndices.push(vertexIndex++);
+
+  //           // Add points for the point cloud
+  //           pointsArray.push(vertex.x, vertex.y, vertex.z);
+  //           pointColorsArray.push(sectionColor.r, sectionColor.g, sectionColor.b);
+  //         });
+
+  //         // Create faces for the polygon
+  //         for (let i = 2; i < faceVertexIndices.length; i++) {
+  //           facesArray.push(
+  //             faceVertexIndices[0],
+  //             faceVertexIndices[i - 1],
+  //             faceVertexIndices[i]
+  //           );
+  //         }
+  //       });
+  //     });
+
+  //     if (verticesArray.length > 0) {
+  //       // Create geometry from collected vertices and faces
+  //       const geometry = new THREE.BufferGeometry();
+  //       geometry.setAttribute(
+  //         "position",
+  //         new THREE.BufferAttribute(new Float32Array(verticesArray), 3)
+  //       );
+  //       geometry.setAttribute(
+  //         "color",
+  //         new THREE.BufferAttribute(new Float32Array(colorsArray), 3)
+  //       );
+  //       geometry.setIndex(facesArray);
+
+  //       // Create a material with vertex colors
+  //       const material = new THREE.MeshBasicMaterial({
+  //         vertexColors: true, // Enable per-vertex coloring
+  //         side: THREE.DoubleSide, // Render both sides of the faces
+  //       });
+
+  //       // Create and add mesh
+  //       const mesh = new THREE.Mesh(geometry, material);
+  //       scene.add(mesh);
+  //     }
+
+  //     if (pointsArray.length > 0) {
+  //       // Load the custom image texture
+  //       const textureLoader = new THREE.TextureLoader();
+  //       textureLoader.load("./image.png", (texture) => {
+  //         texture.minFilter = THREE.LinearFilter;
+  //         texture.magFilter = THREE.LinearFilter;
+  //         texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  //         // Create geometry from collected points
+  //         const pointsGeometry = new THREE.BufferGeometry();
+  //         pointsGeometry.setAttribute(
+  //           "position",
+  //           new THREE.BufferAttribute(new Float32Array(pointsArray), 3)
+  //         );
+  //         pointsGeometry.setAttribute(
+  //           "color",
+  //           new THREE.BufferAttribute(new Float32Array(pointColorsArray), 3)
+  //         );
+
+  //         // Create a material with vertex colors and custom texture
+  //         const pointsMaterial = new THREE.PointsMaterial({
+  //           vertexColors: true, // Enable per-vertex coloring
+  //           size: 5, // Adjust point size
+  //           map: texture, // Apply the custom image texture
+  //           transparent: true, // Enable transparency
+  //         });
+
+  //         // Create and add point cloud
+  //         const pointsMesh = new THREE.Points(pointsGeometry, pointsMaterial);
+  //         scene.add(pointsMesh);
+  //       });
+  //     }
+
+  //     camera.position.set(0, 50, 100);
+  //     camera.lookAt(0, 0, 0);
+  //   }
+
   function getPoints2DBySectionName(
     sectionName = verticesData.polygonsBySection[0].sectionName
   ) {
@@ -8497,7 +8785,28 @@ document.addEventListener("DOMContentLoaded", () => {
       .attr("class", "y-axis")
       .attr("transform", `translate(${margin.left},0)`)
       .call(d3.axisLeft(yScale));
+    // Draw grid lines
+    function createGrid(g, width, height, xScale, yScale) {
+      const xGrid = d3.axisBottom(xScale).tickSize(-height).tickFormat("");
+      const yGrid = d3.axisLeft(yScale).tickSize(-width).tickFormat("");
 
+      g.append("g")
+        .attr("class", "x-grid")
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(xGrid)
+        .selectAll("line")
+        .attr("stroke", "lightgrey");
+
+      g.append("g")
+        .attr("class", "y-grid")
+        .attr("transform", `translate(${margin.left},0)`)
+        .call(yGrid)
+        .selectAll("line")
+        .attr("stroke", "lightgrey");
+    }
+
+    // Call the grid function
+    createGrid(g, width, height, xScale, yScale);
     // Draw polygons with colors
     points2DBySection.forEach((section) => {
       const { color, points2D, sectionName } = section;
@@ -8567,6 +8876,29 @@ document.addEventListener("DOMContentLoaded", () => {
     //     });
     // }
     // Zoom handler function
+    // function zoomed(event) {
+    //   const transform = event.transform;
+
+    //   // Rescale the axes based on zoom
+    //   const newXScale = transform.rescaleX(xScale);
+    //   const newYScale = transform.rescaleY(yScale);
+
+    //   // Update the axes with the new scales
+    //   xAxis.call(d3.axisBottom(newXScale));
+    //   yAxis.call(d3.axisLeft(newYScale));
+
+    //   // Apply zoom transformation to the polygons
+    //   g.selectAll(".polygon")
+    //     .attr("transform", transform)
+    //     .attr("d", (d) => {
+    //       const lineGenerator = d3
+    //         .line()
+    //         .x((d) => newXScale(d.vertex[0]))
+    //         .y((d) => newYScale(d.vertex[1]));
+    //       return lineGenerator(d);
+    //     });
+    // }
+    // Zoom handler function
     function zoomed(event) {
       const transform = event.transform;
 
@@ -8580,7 +8912,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Apply zoom transformation to the polygons
       g.selectAll(".polygon")
-        .attr("transform", transform)
+        .attr("transform", null)
         .attr("d", (d) => {
           const lineGenerator = d3
             .line()
@@ -8655,8 +8987,8 @@ document.addEventListener("DOMContentLoaded", () => {
   //   }
 
   // Add a grid helper to the scene
-  const gridSize = 100;
-  const gridDivisions = 10;
+  const gridSize = 1000;
+  const gridDivisions = 100;
   const gridHelper = new THREE.GridHelper(gridSize, gridDivisions);
   scene.add(gridHelper);
 
