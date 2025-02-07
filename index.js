@@ -8744,8 +8744,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const svg = d3
       .select("#svgContainer")
       .append("svg")
-      .attr("width", 800)
-      .attr("height", 600)
+      .attr("width", 900)
+      .attr("height", 700)
       .call(d3.zoom().on("zoom", zoomed));
     const g = svg.append("g");
 
