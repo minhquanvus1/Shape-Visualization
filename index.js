@@ -8638,6 +8638,8 @@ document.addEventListener("DOMContentLoaded", () => {
         sectionName: section.sectionName,
         color: polygon.color,
         points2D: polygon.points2D,
+        symbol: polygon.symbol,
+        symbolDescription: polygon.symbolDescription,
       }));
     }
 
@@ -8807,9 +8809,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Call the grid function
     createGrid(g, width, height, xScale, yScale);
+
+    // Tooltip for displaying the symbolDescription
+    const tooltip = d3
+      .select("body")
+      .append("div")
+      .attr("class", "tooltip")
+      .style("position", "absolute")
+      .style("background-color", "white")
+      .style("border", "1px solid black")
+      .style("padding", "5px")
+      .style("display", "none");
     // Draw polygons with colors
     points2DBySection.forEach((section) => {
-      const { color, points2D, sectionName } = section;
+      const { color, points2D, sectionName, symbol, symbolDescription } =
+        section;
 
       const lineGenerator = d3
         .line()
@@ -8821,7 +8835,25 @@ document.addEventListener("DOMContentLoaded", () => {
         .attr("d", lineGenerator)
         .attr("fill", `#${color}`) // Ensure color is applied with a hash for hex format
         .attr("stroke", "black") // Set border color for the polygon
-        .attr("data-section", sectionName);
+        .attr("class", "polygon")
+        .attr("data-section", sectionName)
+        .on("click", (event, d) => {
+          d3.selectAll(".polygon")
+            .attr("stroke", "black")
+            .attr("stroke-width", 1); // Reset all strokes
+          d3.select(event.target).attr("stroke", "red").attr("stroke-width", 3); // Highlight selected polygon
+          tooltip
+            .style("display", "block")
+            .html(
+              `Symbol: ${symbol}<br>Symbol description: ${symbolDescription}<br>Color: ${color}`
+            )
+            .style("left", `${event.pageX + 10}px`)
+            .style("top", `${event.pageY + 10}px`);
+        })
+        .on("mouseout", (event, d) => {
+          // Hide the tooltip when the mouse leaves the polygon
+          tooltip.style("display", "none");
+        });
     });
 
     // Optional: Add zoom behavior
@@ -8899,27 +8931,61 @@ document.addEventListener("DOMContentLoaded", () => {
     //     });
     // }
     // Zoom handler function
+    // function zoomed(event) {
+    //   const transform = event.transform;
+
+    //   // Rescale the axes based on zoom
+    //   const newXScale = transform.rescaleX(xScale);
+    //   const newYScale = transform.rescaleY(yScale);
+
+    //   // Update the axes with the new scales
+    //   xAxis.call(d3.axisBottom(newXScale));
+    //   yAxis.call(d3.axisLeft(newYScale));
+
+    //   // Apply zoom transformation to the polygons
+    //   g.selectAll(".polygon")
+    //     .attr("transform", null)
+    //     .attr("d", (d) => {
+    //       const lineGenerator = d3
+    //         .line()
+    //         .x((d) => newXScale(d.vertex[0]))
+    //         .y((d) => newYScale(d.vertex[1]));
+    //       return lineGenerator(d);
+    //     });
+    // }
+    // Zoom and pan event handler
     function zoomed(event) {
-      const transform = event.transform;
+      // Compute new scales based on the zoom transform
+      const newXScale = event.transform.rescaleX(xScale);
+      const newYScale = event.transform.rescaleY(yScale);
 
-      // Rescale the axes based on zoom
-      const newXScale = transform.rescaleX(xScale);
-      const newYScale = transform.rescaleY(yScale);
-
-      // Update the axes with the new scales
+      // Update the axes using the new scales
       xAxis.call(d3.axisBottom(newXScale));
       yAxis.call(d3.axisLeft(newYScale));
 
-      // Apply zoom transformation to the polygons
-      g.selectAll(".polygon")
-        .attr("transform", null)
-        .attr("d", (d) => {
-          const lineGenerator = d3
-            .line()
-            .x((d) => newXScale(d.vertex[0]))
-            .y((d) => newYScale(d.vertex[1]));
-          return lineGenerator(d);
-        });
+      // Update grid lines to reflect the new scales
+      g.select(".x-grid")
+        .call(d3.axisBottom(newXScale).tickSize(-height).tickFormat(""))
+        .selectAll("line")
+        .attr("stroke", "lightgrey");
+
+      g.select(".y-grid")
+        .call(d3.axisLeft(newYScale).tickSize(-width).tickFormat(""))
+        .selectAll("line")
+        .attr("stroke", "lightgrey");
+
+      // Redraw each polygon's path using the updated scales so their shapes change accordingly
+      d3.selectAll(".polygon").attr("d", function (d) {
+        // Create a new line generator for this zoom state
+        return d3
+          .line()
+          .x(function (p) {
+            return newXScale(p.vertex[0]);
+          })
+          .y(function (p) {
+            return newYScale(p.vertex[1]);
+          })(d);
+      });
     }
   }
 
