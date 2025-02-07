@@ -8838,6 +8838,8 @@ document.addEventListener("DOMContentLoaded", () => {
         .attr("class", "polygon")
         .attr("data-section", sectionName)
         .on("click", (event, d) => {
+          event.stopPropagation();
+
           d3.selectAll(".polygon")
             .attr("stroke", "black")
             .attr("stroke-width", 1); // Reset all strokes
@@ -8855,7 +8857,15 @@ document.addEventListener("DOMContentLoaded", () => {
           tooltip.style("display", "none");
         });
     });
-
+    // If user clicks outside of any polygon, reset all polygon styling and hide tooltip
+    svg.on("click", (event) => {
+      if (!d3.select(event.target).classed("polygon")) {
+        d3.selectAll(".polygon")
+          .attr("stroke", "black")
+          .attr("stroke-width", 1);
+        tooltip.style("display", "none");
+      }
+    });
     // Optional: Add zoom behavior
     // function zoomed(event) {
     //   const transform = event.transform;
