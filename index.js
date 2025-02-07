@@ -2762,7 +2762,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const mesh = new THREE.Mesh(geometry, material);
       console.log("Mesh created:", mesh);
       mesh.scale.set(0.1, 0.1, 0.1);
-      console.log("Mesh scale set to 0.5");
+      console.log("Mesh scale set to 0.1");
       scene.add(mesh);
     }
 
